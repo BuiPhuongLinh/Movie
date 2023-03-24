@@ -22,43 +22,40 @@ class RemoteMovieSourceImpl(private val apiService: ApiService) : MovieRepositor
     override suspend fun getListMovie(film: String, page: Int): Flow<NetworkStatus<List<Movie>>> {
         return flow{
             emit(NetworkStatus.Loading())
-            val response = apiService.getListMovie(film = film, page = page)
-            if (response.isSuccessful && response.body() != null) {
-                val body = response.body()!!
-                val odmFilm = OmdFilmResponse(body.Search, body.totalResults, body.Response)
-                emit(NetworkStatus.Success(odmFilm.Search))
-            } else {
-                val messageError = processErrorBody(response)
-                emit(NetworkStatus.Error(messageError))
-            }
-        }
-    }
-
-    private fun processErrorBody(response: Response<OmdFilmResponse>): String? {
-        try {
-            val messageError = response.errorBody()?.let {
-                val errorJson = it.string()
-                val moshi: Moshi = Moshi.Builder().build()
-                val jsonAdapter = moshi.adapter(ErrorBody::class.java)
-                jsonAdapter.fromJson(errorJson)?.Error ?: response.message()
-            } ?: response.message()
-            return messageError
-        } catch (e: Exception) {
-            return when (e) {
-                is ConnectException -> {
-                    MessageError.CONNECT_EXCEPTION.name
+            try {
+                val response = apiService.getListMovie(film = film, page = page)
+                if (response.isSuccessful && response.body() != null) {
+                    val body = response.body()!!
+                    val odmFilm = OmdFilmResponse(body.Search, body.totalResults, body.Response)
+                    emit(NetworkStatus.Success(odmFilm.Search))
+                } else {
+                    val messageError = response.errorBody()?.let {
+                        val errorJson = it.string()
+                        val moshi: Moshi = Moshi.Builder().build()
+                        val jsonAdapter = moshi.adapter(ErrorBody::class.java)
+                        jsonAdapter.fromJson(errorJson)?.Error ?: response.message()
+                    } ?: response.message()
+                    emit(NetworkStatus.Error(messageError))
                 }
-                is UnknownHostException -> {
-                    MessageError.UNKNOWN_HOST_EXCEPTION.name
-                }
-                is SocketTimeoutException -> {
-                    MessageError.SOCKET_TIME_OUT_EXCEPTION.name
-                }
-                is HttpException -> {
-                    MessageError.UNKNOWN_NETWORK_EXCEPTION.name
-                }
-                else -> {
-                    MessageError.UNKNOWN_NETWORK_EXCEPTION.name
+            } catch (e: Exception) {
+                when (e) {
+                    is ConnectException -> {
+                        NetworkStatus.Error<List<Movie>>(MessageError.CONNECT_EXCEPTION.message)
+                    }
+                    is UnknownHostException -> {
+                        NetworkStatus.Error(MessageError.UNKNOWN_HOST_EXCEPTION.message)
+                    }
+                    is SocketTimeoutException -> {
+                        NetworkStatus.Error(MessageError.SOCKET_TIME_OUT_EXCEPTION.message)
+                    }
+                    is HttpException -> {
+                        NetworkStatus.Error(MessageError.UNKNOWN_NETWORK_EXCEPTION.message)
+                    }
+                    else -> {
+                        NetworkStatus.Error(MessageError.UNKNOWN_NETWORK_EXCEPTION.message)
+                    }
+                }.run {
+                    emit(this)
                 }
             }
         }

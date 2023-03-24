@@ -12,7 +12,7 @@ import com.bumptech.glide.Glide
 
 class MovieAdapter :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    private lateinit var movies: ArrayList<Movie?>
+    private var movies: ArrayList<Movie?> = arrayListOf()
 
     fun addNewData(dataViews: ArrayList<Movie>) {
         this.movies = ArrayList()

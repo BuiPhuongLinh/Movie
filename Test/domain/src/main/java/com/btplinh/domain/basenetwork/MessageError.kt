@@ -1,6 +1,6 @@
 package com.btplinh.domain.basenetwork
 
-enum class MessageError(value: String) {
+enum class MessageError(val message: String) {
     SOCKET_TIME_OUT_EXCEPTION("Request timed out while trying to connect. Please ensure you have a strong signal and try again."),
     UNKNOWN_NETWORK_EXCEPTION("An unexpected error has occurred. Please check your network connection and try again."),
     CONNECT_EXCEPTION("Could not connect to the server. Please check your internet connection and try again."),

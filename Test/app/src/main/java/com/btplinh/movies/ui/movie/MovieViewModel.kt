@@ -17,7 +17,7 @@ import javax.inject.Inject
 class MovieViewModel @Inject constructor(private val movieUseCase: MovieUseCase) : ViewModel() {
 
     private val _listMovieLiveData =
-        MutableLiveData<List<Movie>>(mutableListOf())
+        MutableLiveData<List<Movie>>()
     val listMovieLiveData: LiveData<List<Movie>> = _listMovieLiveData
 
     private val _dataErrorLiveData =

@@ -37,11 +37,11 @@ class MovieViewModelTest {
         )
 
         coEvery {
-            movieUseCase.execute(name, page)
+            movieUseCase.execute(any(), any())
         } returns flow {
             emit(NetworkStatus.Success(response))
         }
         viewModel.getListMovie(page, name)
-        assert(viewModel.listMovieLiveData.getOrAwaitValue().isEmpty())
+        assert(viewModel.listMovieLiveData.getOrAwaitValue().size == 1)
     }
 }
